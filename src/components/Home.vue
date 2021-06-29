@@ -26,12 +26,43 @@
         Here are some tips about how to be a better developer</a
       >
     </ul>
+    <ul v-for="(item, index) in equipment" :key="index">
+        <li v-if="item.active" :class="{ missing : !item.manufacturer || !item.equipment_type}">
+            Manufacturer: "{{item.manufacturer}}"  Type: "{{item.equipment_type}}"
+            <span v-if="!Array.isArray(item.equipment_photos) || item.equipment_photos.length === 0">
+                NO PHOTOS
+            </span>
+        </li>
+    </ul>
   </div>
 </template>
 
 <script>
 export default {
   name: "Home",
+  data: function() {
+      return {
+          equipment: null
+      };
+  },
+  methods: {
+	  getEquipment: function() {
+		  // todo: how to get rid of hard-coded localhost url?
+		  this.$http.get('http://localhost:8100/equipment').then(function(res) {
+			 this.equipment = res.data;
+		  }, function(err) {
+			  if (err.status === 500) {
+				  // try again until it works?
+				  this.getEquipment();
+			  } else {
+				  console.log('error retrieving equipment data: ' + err.status);
+			  }
+		  });
+	  },
+  },
+  mounted: function() {
+      this.getEquipment();
+  }
 };
 </script>
 
@@ -50,5 +81,8 @@ li {
 }
 a {
   color: #42b983;
+}
+.missing {
+  background: yellow;
 }
 </style>
